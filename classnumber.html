@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班級座號查詢</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #a8c0ff, #3f2b96);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        input {
+            padding: 12px;
+            width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0056b3;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        p {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .warning {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #000000; /* 警告文字顏色 */
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+            button {
+                font-size: 14px;
+            }
+        }
+
+        /* 隱藏檢測圖片 */
+        .hidden-img {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>畢業證件照查詢系統</h1>
+        <input type="text" id="studentId" placeholder="請輸入班級座號 (如：30723)">
+        <button id="submitButton">查詢照片</button>
+        <p id="result"></p>
+        <p class="warning">以上功能請合理使用</p>
+        <p class="warning">目前僅提供303至317同學查詢</p>
+        <!-- 隱藏檢測圖片 -->
+        <img id="testImage" class="hidden-img" alt="hidden">
+    </div>
+
+    <script>
+        const classSuffixes = {
+            "303": "21",
+            "304": "28",
+            "305": "29",
+            "306": "33",
+            "307": "33",
+            "308": "33",
+            "309": "35",
+            "310": "39",
+            "311": "31", 
+            "312": "29", 
+            "313": "30", 
+            "314": "39", 
+            "315": "35", 
+            "316": "39", 
+            "317": "31",
+        };
+
+        function checkStudentId() {
+            const studentId = document.getElementById('studentId').value.trim();
+            
+            if (studentId.length === 5 && !isNaN(studentId)) {
+                const classCode = studentId.slice(0, 3); // 取前三位作為班級代碼
+                const classNumber = studentId.slice(3); // 取後兩位作為座號
+                const schoolCode = "287"; // 學校代碼
+
+                if (classSuffixes[classCode]) {
+                    const classSuffix = classSuffixes[classCode]; // 獲取對應的後綴
+                    // 第一次拍攝的圖片 URL
+                    const imageUrl1 = `https://super-ninenine.synology.me:9999/clhs/${classCode}-${classSuffix}/${schoolCode}${studentId}.jpg`;
+                    // 第二次拍攝的圖片 URL
+                    const imageUrl2 = `https://super-ninenine.synology.me:9999/clhs/0903中壢三補-63/${schoolCode}${studentId}.jpg`;
+
+                    // 檢測第一張圖片是否存在
+                    const testImage = document.getElementById('testImage');
+                    testImage.src = imageUrl1;
+
+                    testImage.onload = function() {
+                        // 第一張圖片存在，顯示該圖片 URL
+                        document.getElementById('result').innerHTML = `<a href="${imageUrl1}" target="_blank">點我查看照片</a>`;
+                    };
+
+                    testImage.onerror = function() {
+                        // 第一張圖片不存在，顯示第二次拍攝的圖片 URL
+                        document.getElementById('result').innerHTML = `<a href="${imageUrl2}" target="_blank">點我查看照片（第二次拍攝）</a>`;
+                    };
+                } else {
+                    alert('無效的班級代碼！');
+                }
+            } else {
+                alert('請輸入有效的班級座號！');
+            }
+        }
+
+        document.getElementById('submitButton').addEventListener('click', checkStudentId);
+
+        // 添加鍵盤事件監聽器
+        document.getElementById('studentId').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkStudentId(); // 按下 Enter 鍵時執行查詢
+            }
+        });
+    </script>
+</body>
+</html>
+
+
