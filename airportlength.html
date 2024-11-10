@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>機場大圓距離計算器</title>
+  <style>
+    /* 基本頁面樣式 */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: #495057;
+    }
+
+    /* 容器樣式 */
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* 標題樣式 */
+    h1 {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #007bff;
+    }
+
+    /* 輸入框樣式 */
+    label {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #343a40;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #007bff;
+    }
+
+    /* 按鈕樣式 */
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* 結果顯示區域 */
+    .result {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #28a745;
+      text-align: center;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #e9f7e6;
+      display: none; /* 初始不顯示 */
+    }
+
+    /* 顯示經緯度 */
+    .coordinates {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: #f1f3f5;
+      display: none; /* 初始不顯示 */
+    }
+
+    /* 讓按鈕與輸入框的間距看起來更有層次 */
+    .container input,
+    .container button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>機場大圓距離計算器</h1>
+
+  <label for="airport1">輸入第一機場代碼 (IATA 或 ICAO):</label>
+  <input type="text" id="airport1" placeholder="輸入機場代碼 (IATA 或 ICAO)">
+
+  <label for="airport2">輸入第二機場代碼 (IATA 或 ICAO):</label>
+  <input type="text" id="airport2" placeholder="輸入機場代碼 (IATA 或 ICAO)">
+
+  <button onclick="calculateDistance()">計算距離</button>
+
+  <div class="result" id="result"></div>
+
+  <!-- 顯示經緯度的區域 -->
+  <div class="coordinates" id="coordinates"></div>
+
+  <!-- 顯示可達的飛機型號 -->
+  <div class="aircrafts" id="aircrafts"></div>
+</div>
+
+<script>
+// 飛機型號與最大航程的資料
+const aircraftRanges = {
+  "737-600": 5610,
+  "737-700": 6230,
+  "737-800": 5665,
+  "737-900": 5955,
+  "737 MAX 7": 7130,
+  "737 MAX 8": 6570,
+  "737 MAX 9": 6570,
+  "737 MAX 10": 6110,
+  "747-100": 9200,
+  "747-200": 12000,
+  "747-300": 12800,
+  "747-400": 13350,
+  "747-8": 14800,
+  "747-400F": 8230,
+  "747-8F": 8130,
+  "757-200": 7222,
+  "757-200PF": 5832,
+  "757-300": 6400,
+  "767-200": 7200,
+  "767-200ER": 12220,
+  "767-300": 9800,
+  "767-300ER": 11190,
+  "767-400ER": 10418,
+  "767F": 6025,
+  "777-200": 9700,
+  "777-200ER": 13300,
+  "777-200LR": 15600,
+  "777-300": 11000,
+  "777-300ER": 13650,
+  "777F": 9200,
+  "777X-8": 16170,
+  "777X-9": 13500,
+  "787-8": 13620,
+  "787-9": 14140,
+  "787-10": 11910,
+  "A330-200": 13450,
+  "A330-300": 11750,
+  "A330-800neo": 15200,
+  "A330-900neo": 13400,
+  "A340-200": 14800,
+  "A340-300": 13450,
+  "A340-500": 16020,
+  "A340-600": 14600,
+  "350-900": 15200,
+  "350-1000": 15500,
+  "350-ULR": 18000,
+  "A319ceo": 6100,
+  "A319neo": 6200,
+  "A320ceo": 6100,
+  "A320neo": 6500,
+  "A321ceo": 5900,
+  "A321neo": 6300,
+  "A321xlr": 8700
+};
+
+// 假設你的 CSV 檔案與 HTML 檔案在同一資料夾，使用相對路徑
+const csvFilePath = 'airport-1.csv';  // 修改為相對路徑
+let airports = []; // 用來儲存從 CSV 檔案中讀取的機場資料
+
+// 讀取 CSV 檔案並解析
+fetch(csvFilePath)
+  .then(response => response.text())
+  .then(csvData => {
+    airports = parseCSV(csvData);
+  })
+  .catch(error => console.error('CSV 讀取錯誤:', error));
+
+// 解析 CSV 字串
+function parseCSV(csvData) {
+  const lines = csvData.trim().split('\n');
+  const result = [];
+
+  lines.forEach(line => {
+    const [IATA, ICAO, lat, lon] = line.split(',');
+    if (IATA && ICAO && lat && lon) {
+      result.push({ IATA, ICAO, lat: parseFloat(lat), lon: parseFloat(lon) });
+    }
+  });
+
+  return result;
+}
+
+// 將經緯度轉換為地理位置格式（西經、南緯等）
+function formatCoordinates(lat, lon) {
+  const latDirection = lat < 0 ? '南緯' : '北緯';
+  const lonDirection = lon < 0 ? '西經' : '東經';
+  const formattedLat = Math.abs(lat).toFixed(2);
+  const formattedLon = Math.abs(lon).toFixed(2);
+  
+  return {
+    lat: `${formattedLat} ${latDirection}`,
+    lon: `${formattedLon} ${lonDirection}`,
+  };
+}
+
+// 計算飛機能飛行的範圍
+function calculateAircraftsByModel(distance) {
+  let canFly = [];
+
+  // 檢查所有機型能否飛行
+  for (const [model, range] of Object.entries(aircraftRanges)) {
+    if (distance <= range) {
+      canFly.push(model);
+    }
+  }
+   // 檢查 A320 系列是否都能飛行
+  const a320FamilyModels = ["A319ceo", "A319neo", "A320ceo", "A320neo", "A321ceo", "A321neo", "A321xlr"];
+  const a320CanFly = a320FamilyModels.every(model => canFly.includes(model));
+
+  // 如果 A320 系列的所有型號都能飛行，顯示為 A320 Family
+  if (a320CanFly) {
+    canFly = canFly.filter(model => !a320FamilyModels.includes(model));  // 移除個別型號
+    canFly.push("A320 Family");  // 加上 A320 Family
+  }
+  // 檢查 737 NG 系列是否都能飛行
+ const b737NGModels = ["737-600", "737-700", "737-800", "737-900"];
+ const b737NGCanFly = b737NGModels.every(model => canFly.includes(model));
+
+ // 如果 737 NG 系列的所有型號都能飛行，顯示為 737 NG Family
+ if (b737NGCanFly) {
+  canFly = canFly.filter(model => !b737NGModels.includes(model));  // 移除 NG 個別型號
+  canFly.push("737 NG Family");  // 加上 737 NG Family
+ }
+
+ // 檢查 737 MAX 系列是否都能飛行
+ const b737MAXModels = ["737 MAX 7", "737 MAX 8", "737 MAX 9", "737 MAX 10"];
+ const b737MAXCanFly = b737MAXModels.every(model => canFly.includes(model));
+
+ // 如果 737 MAX 系列的所有型號都能飛行，顯示為 737 MAX Family
+ if (b737MAXCanFly) {
+  canFly = canFly.filter(model => !b737MAXModels.includes(model));  // 移除 MAX 個別型號
+  canFly.push("737 MAX Family");  // 加上 737 MAX Family
+ }
+
+  // 檢查 747 系列是否都能飛行
+ const b747FamilyModels = ["747-100", "747-200", "747-300", "747-400", "747-8", "747-400F ","747-8F"];
+  const b747CanFly = b747FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 747 系列的所有型號都能飛行，顯示為 747 Family
+ if (b747CanFly) {
+  canFly = canFly.filter(model => !b747FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("747 Family");  // 加上 747 Family
+ }
+
+  // 檢查 757 系列是否都能飛行
+ const b757FamilyModels = ["757-200", "757-200PF", "757-300"];
+ const b757CanFly = b757FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 757 系列的所有型號都能飛行，顯示為 757 Family
+ if (b757CanFly) {
+  canFly = canFly.filter(model => !b757FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("757 Family");  // 加上 757 Family
+ }
+
+    // 檢查 767 系列是否都能飛行
+ const b767FamilyModels = ["767-200", "767-200ER", "767-300", "767-300ER", "767-400ER", "767F"];
+ const b767CanFly = b767FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 767 系列的所有型號都能飛行，顯示為 767 Family
+  if (b767CanFly) {
+  canFly = canFly.filter(model => !b767FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("767 Family");  // 加上 767 Family
+ }
+
+  // 檢查 777 系列是否都能飛行
+ const b777FamilyModels = ["777-200", "777-200ER", "777-200LR", "777-300", "777-300ER", "777F", "777X-8", "777X-9"];
+ const b777CanFly = b777FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 777 系列的所有型號都能飛行，顯示為 777 Family
+  if (b777CanFly) {
+  canFly = canFly.filter(model => !b777FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("B777 Family");  // 加上 777 Family
+  }
+  // 檢查 787 系列是否都能飛行
+ const b787Models = ["787-8", "787-9", "787-10"];
+ const b787CanFly = b787Models.every(model => canFly.includes(model));
+
+ // 如果 787 系列的所有型號都能飛行，顯示為 787 Family
+ if (b787CanFly) {
+  canFly = canFly.filter(model => !b787Models.includes(model));  // 移除 787 個別型號
+  canFly.push("787 Family");  // 加上 787 Family
+ }
+
+
+   // 檢查 A330 系列是否都能飛行
+ const a330FamilyModels = ["A330-200", "A330-300", "A330-800neo", "A330-900neo"];
+ const a330CanFly = a330FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 A330 系列的所有型號都能飛行，顯示為 A330 Family
+ if (a330CanFly) {
+  canFly = canFly.filter(model => !a330FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("A330 Family");  // 加上 A330 Family
+ }
+ // 檢查 A340 系列是否都能飛行
+ const a340FamilyModels = ["A340-200", "A340-300", "A340-500", "A340-600"];
+ const a340CanFly = a340FamilyModels.every(model => canFly.includes(model));
+
+ // 如果 A340 系列的所有型號都能飛行，顯示為 A340 Family
+ if (a340CanFly) {
+  canFly = canFly.filter(model => !a340FamilyModels.includes(model));  // 移除個別型號
+  canFly.push("A340 Family");  // 加上 A340 Family
+ }
+
+
+  // 檢查 A350 系列是否都能飛行
+  const a350FamilyModels = ["350-900", "350-1000", "350-ULR"];
+  const a350CanFly = a350FamilyModels.every(model => canFly.includes(model));
+
+  // 如果 A350 系列的所有型號都能飛行，顯示為 A350 Family
+  if (a350CanFly) {
+    canFly = canFly.filter(model => !a350FamilyModels.includes(model));  // 移除個別型號
+    canFly.push("A350 Family");  // 加上 A350 Family
+  }
+
+  return canFly;
+}
+
+// 計算大圓距離並顯示公里、海哩、英里
+function calculateDistance() {
+  const airport1Code = document.getElementById('airport1').value.trim().toUpperCase();
+  const airport2Code = document.getElementById('airport2').value.trim().toUpperCase();
+
+  if (!airport1Code || !airport2Code) {
+    document.getElementById('result').innerText = "請輸入有效的機場代碼!";
+    return;
+  }
+
+  // 搜尋機場資料
+  const airport1 = airports.find(a => a.IATA === airport1Code || a.ICAO === airport1Code);
+  const airport2 = airports.find(a => a.IATA === airport2Code || a.ICAO === airport2Code);
+
+  if (!airport1 || !airport2) {
+    document.getElementById('result').innerText = "找不到對應的機場!";
+    return;
+  }
+
+  const lat1 = airport1.lat;
+  const lon1 = airport1.lon;
+  const lat2 = airport2.lat;
+  const lon2 = airport2.lon;
+
+  const R = 6371; // 地球半徑（公里）
+
+  const toRadians = angle => angle * (Math.PI / 180);
+
+  const φ1 = toRadians(lat1);
+  const φ2 = toRadians(lat2);
+  const Δφ = toRadians(lat2 - lat1);
+  const Δλ = toRadians(lon2 - lon1);
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distanceKm = R * c; // 大圓距離（公里）
+  const distanceMiles = distanceKm * 0.621371; // 轉換為英里
+  const distanceNauticalMiles = distanceKm * 0.539957; // 轉換為海哩
+
+  const coordinates1 = formatCoordinates(lat1, lon1);
+  const coordinates2 = formatCoordinates(lat2, lon2);
+
+  document.getElementById('coordinates').innerText = `機場 1: ${airport1Code} (${coordinates1.lat}, ${coordinates1.lon})\n` +
+    `機場 2: ${airport2Code} (${coordinates2.lat}, ${coordinates2.lon})`;
+
+  // 顯示飛行可達的機型
+  const canFlyAircrafts = calculateAircraftsByModel(distanceKm);
+  document.getElementById('aircrafts').innerText = `可以飛行的飛機型號: ${canFlyAircrafts.join(', ')}`;
+
+  document.getElementById('result').innerText = `大圓距離: ${distanceKm.toFixed(2)} 公里 / ${distanceMiles.toFixed(2)} 英里 / ${distanceNauticalMiles.toFixed(2)} 海哩`;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('coordinates').style.display = 'block';
+  document.getElementById('aircrafts').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
