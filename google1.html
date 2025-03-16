@@ -3,99 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>問題回答系統</title>
-    <script>
-        async function submitAnswer() {
-    const name = document.getElementById("name").value;
-    const answer = document.getElementById("answer").value;
-
-    if (!name || !answer) {
-        alert("請填寫姓名和回答！");
-        return;
-    }
-
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzthh47saNKwKJeud8iogxEKvyWK7k4P0liFxxQhTZEf_bO7NS6YdnFj6Q0iQz_83FX-w/exec";  // 替換成新 API 網址
-
-    console.log("📡 送出請求至:", apiUrl);
-    console.log("📨 發送資料:", { name, answer });
-
-    try {
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, answer }),
-            mode: "cors"  // ✅ 允許跨來源請求
-        });
-
-        console.log("🔄 回應狀態:", response.status);
-        const result = await response.json();
-        console.log("📩 回應結果:", result);
-
-        if (result.status === "成功") {
-            alert("提交成功！");
-            document.getElementById("answerForm").reset();
-        } else {
-            alert("提交失敗：" + result.message);
-        }
-    } catch (error) {
-        console.error("❌ 發生錯誤:", error);
-        alert("提交失敗，請檢查瀏覽器控制台");
-    }
-}
-
-        async function submitAnswer() {
-    const name = document.getElementById("name").value;
-    const answer = document.getElementById("answer").value;
-
-    if (!name || !answer) {
-        alert("請填寫姓名和回答！");
-        return;
-    }
-
-    const apiUrl = "https://script.google.com/macros/s/AKfycbykCtITAVyRoVIgUdV2IhFWTeH-TxbHAzW0D2zqZn-Um1gWftfRIMd9_8SSoC_0OuM_Jw/exec";  // 替換成你的 API 網址
-
-    console.log("📡 送出請求至:", apiUrl);
-    console.log("📨 發送資料:", { name, answer });
-
-    try {
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, answer })
-        });
-
-        console.log("🔄 回應狀態:", response.status);
-        const result = await response.json();
-        console.log("📩 回應結果:", result);
-
-        if (result.status === "成功") {
-            alert("提交成功！");
-            document.getElementById("answerForm").reset();
-        } else {
-            alert("提交失敗：" + result.message);
-        }
-    } catch (error) {
-        console.error("❌ 發生錯誤:", error);
-        alert("提交失敗，請檢查瀏覽器控制台");
-    }
-}
-
-    </script>
-    
-    
+    <title>問答表單</title>
 </head>
 <body>
-    <h2>請回答以下問題：</h2>
-    <p><strong>問題：</strong> 你覺得 AI 未來的發展方向會是什麼？</p>
-
+    <h2>問答表單</h2>
     <form id="answerForm">
-        <label for="name">你的姓名：</label><br>
-        <input type="text" id="name" required><br><br>
+        <label for="name">姓名：</label>
+        <input type="text" id="name" required>
+        <br><br>
 
-        <label for="answer">你的回答：</label><br>
-        <textarea id="answer" rows="4" required></textarea><br><br>
+        <label for="answer">回答：</label>
+        <textarea id="answer" required></textarea>
+        <br><br>
 
-        <button type="button" onclick="submitAnswer()">提交回答</button>
+        <button type="button" onclick="submitAnswer()">提交</button>
     </form>
+
+    <script>
+        async function submitAnswer() {
+            const name = document.getElementById("name").value;
+            const answer = document.getElementById("answer").value;
+
+            if (!name || !answer) {
+                alert("請填寫姓名和回答！");
+                return;
+            }
+
+            const apiUrl = "https://script.google.com/macros/s/AKfycbxamUfJfjQWQw8kFNFjJUcAFglumWsDKYguzaqT26gqeCu-lS_sKk7Nl7Ug_SCo0gTN/exec"; // 替換為你的 API 網址
+
+            console.log("📡 送出請求至:", apiUrl);
+            console.log("📨 發送資料:", { name, answer });
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, answer }),
+                    mode: "cors"
+                });
+
+                console.log("🔄 回應狀態:", response.status);
+                const result = await response.json();
+                console.log("📩 回應結果:", result);
+
+                if (result.status === "成功") {
+                    alert("提交成功！");
+                    document.getElementById("answerForm").reset();
+                } else {
+                    alert("提交失敗：" + result.message);
+                }
+            } catch (error) {
+                console.error("❌ 發生錯誤:", error);
+                alert("提交失敗，請檢查瀏覽器控制台");
+            }
+        }
+    </script>
 </body>
 </html>
+
