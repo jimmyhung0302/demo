@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題回答系統</title>
+    <script>
+        async function submitAnswer() {
+            const name = document.getElementById("name").value;
+            const answer = document.getElementById("answer").value;
+
+            if (!name || !answer) {
+                alert("請填寫姓名和回答！");
+                return;
+            }
+
+            const apiUrl = "https://script.google.com/macros/s/AKfycbykCtITAVyRoVIgUdV2IhFWTeH-TxbHAzW0D2zqZn-Um1gWftfRIMd9_8SSoC_0OuM_Jw/exec";  // 替換為你的 API 網址
+
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, answer })
+            });
+
+            const result = await response.json();
+            if (result.status === "成功") {
+                alert("提交成功！");
+                document.getElementById("answerForm").reset();
+            } else {
+                alert("提交失敗，請稍後再試！");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>請回答以下問題：</h2>
+    <p><strong>問題：</strong> 你覺得 AI 未來的發展方向會是什麼？</p>
+
+    <form id="answerForm">
+        <label for="name">你的姓名：</label><br>
+        <input type="text" id="name" required><br><br>
+
+        <label for="answer">你的回答：</label><br>
+        <textarea id="answer" rows="4" required></textarea><br><br>
+
+        <button type="button" onclick="submitAnswer()">提交回答</button>
+    </form>
+</body>
+</html>
