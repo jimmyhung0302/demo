@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google 表單回應資料</title>
+    <script>
+        async function fetchData() {
+            const apiUrl = "https://script.google.com/macros/s/AKfycbyGRKwFW_xNrfNbtZns3hPi0owMjZrA488XCeBbrI4S00qiOp77AIAG-YQZv4hQ6LrzDg/exec";  // 替換成你的 API 網址
+            try {
+                let response = await fetch(apiUrl);
+                let data = await response.json();
+                let table = document.getElementById("dataTable");
+
+                data.forEach((row, index) => {
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${row["時間戳記"]}</td>
+                        <td>${row["姓名"]}</td>
+                        <td>${row["Email"]}</td>
+                        <td>${row["訊息"]}</td>
+                    `;
+                    table.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("載入資料錯誤:", error);
+            }
+        }
+
+        window.onload = fetchData;
+    </script>
+</head>
+<body>
+    <h2>Google 表單回應資料</h2>
+    <table border ="1">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>時間</th>
+                <th>姓名</th>
+                <th>Email</th>
+                <th>訊息</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+    </table>
+</body>
+</html>
+
